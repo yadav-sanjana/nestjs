@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNinjaDto } from './dto/create-ninja.dto';
 import { UpdateNinjaDto } from './dto/update-ninja.dto';
 
@@ -17,11 +17,16 @@ export class NinjasService {
     }
 
     getNinja(id: number) {
-        const ninja = this.ninjasLog.find((ninja) => ninja.id === id)
-        if (!ninja) {
-            throw new Error("ninja not found")
+        try {
+            const ninja = this.ninjasLog.find((ninja) => ninja.id === id)
+            if (!ninja) {
+                throw new Error("ninja not found")
+            }
+            return ninja
+        } catch (error) {
+            throw new NotFoundException()
         }
-        return ninja
+
     }
 
     createNinja(CreateNinjaDto: CreateNinjaDto) {
@@ -35,21 +40,30 @@ export class NinjasService {
 
 
     updateNinja(id: number, updateNinjaDto: UpdateNinjaDto) {
-        const ninjasUpdate = this.ninjasLog.map((ninja) => {
-            if (ninja.id === id) {
-                return { ...ninja, ...updateNinjaDto }
-            }
+        try {
+            const ninjasUpdate = this.ninjasLog.map((ninja) => {
+                if (ninja.id === id) {
+                    return { ...ninja, ...updateNinjaDto }
+                }
 
-            return ninjasUpdate
-        })
-        return this.getNinja(id)
+                return ninjasUpdate
+            })
+
+            return this.getNinja(id)
+        } catch (error) {
+            throw new NotFoundException()
+        }
     }
 
     removeNinja(id: number) {
-        const toRemove = this.getNinja(id)
-        this.ninjasLog = this.ninjasLog.filter((ninja) => ninja.id !== id)
+        try {
+            const toRemove = this.getNinja(id)
+            this.ninjasLog = this.ninjasLog.filter((ninja) => ninja.id !== id)
+            return toRemove
 
-        return toRemove
+        } catch (error) {
+            throw new NotFoundException()
+        }
     }
 
 
